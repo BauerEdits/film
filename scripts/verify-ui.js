@@ -70,6 +70,12 @@ try {
   page.on("pageerror", (error) => pageErrors.push(String(error)));
   await page.setViewport({ width: 1280, height: 800 });
   await page.goto(appUrl, { waitUntil: "networkidle0" });
+  await page.waitForSelector("#view-uncommitted[aria-pressed='true']");
+  await page.waitForSelector(".chart-empty");
+  await page.waitForFunction(() => document.querySelector("#commitment-note")?.textContent.includes("0 loaded"));
+  const uncommittedCopy = await page.$eval(".chart-empty", (el) => el.textContent);
+  if (!uncommittedCopy.includes("Committed")) throw new Error("uncommitted empty state hides committed players");
+  await page.click("#view-everyone");
   await page.waitForFunction((count) => document.querySelectorAll(".point").length === count, {}, plotted);
 
   await page.$eval(`[data-player-id="${byrum.id}"]`, (el) => {
@@ -116,6 +122,7 @@ try {
 
   await page.setViewport({ width: 390, height: 844, isMobile: true });
   await page.reload({ waitUntil: "networkidle0" });
+  await page.click("#view-committed");
   await page.waitForFunction((count) => document.querySelectorAll(".point").length === count, {}, plotted);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   if (overflow > 1) throw new Error(`narrow layout overflowed by ${overflow}px`);

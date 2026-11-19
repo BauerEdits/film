@@ -21,6 +21,8 @@ The API is a small Node server using the built-in SQLite module. On startup it b
 
 ## What is loaded
 
+The board opens on known-uncommitted players: a cited source says they entered the portal and names no new school. There are none in the seed. Every loaded player has a destination school on the cited page, so they are known-committed. The switch labeled Everyone or Committed shows them. No destination was erased to fill the uncommitted list.
+
 Two seasons, and neither one is the full portal.
 
 **2025.** Players on 2025-26 NCAA football rosters whose previous-school field names a college or junior college. The rows come from the CC0 roster release [NCAA All-Sports Rosters 2025-26](https://huggingface.co/datasets/dharits3/ncaa-college-athlete-rosters-2025-26) (Dharit Shah, v2.1.1). High-school previous schools, academic majors that leaked into that field, and strings that do not name a college are left out. The count and the exclusion totals are in [SOURCES.md](SOURCES.md). `scripts/build_roster_transfers.py` is the filter that produced `server/data/roster2025.json`.

@@ -69,6 +69,14 @@ Position groups on the chart are a display grouping. Cornerbacks and safeties ar
 - Otherwise the label uses the words on the page, such as "Career", "At Oregon State", or "One season at Florida State", and does not invent a calendar year.
 - "2023-24" and "2023-25" are labels the page itself used for a span.
 
+## Committed and uncommitted
+
+A loaded player is known-committed when `school_to` is the school named by the cited page. For the 2025 roster rows, that is the school whose roster lists him. For the 2026 rows, that is Auburn, Illinois, Kennesaw State, or Wisconsin, the school that announced him as an incoming transfer. All 10,331 loaded players are known-committed. None of those destination schools were cleared.
+
+A loaded player would be known-uncommitted only when a cited source says he entered the portal and names no new school. There are 0 such rows. No loaded row has an unknown commitment: every loaded row has a destination on the cited page.
+
+People who entered the portal and are not named on a cited page are missing from the database. They are not stored as available. On 19 November 2026, TransferPortl's public portal page said 6 of 4,789 tracked 2026 players were still available and 4,773 had committed (https://transferportl.com/portal?status=available). That named list is not loaded. TransferPortl's terms say not to copy the site's data into a competing product, and the same terms say its destinations are model estimates, not facts (https://transferportl.com/terms, updated 6 October 2026). The Digest count of 979 players without a new school, cited above, is a CollegeFootballData.com compilation and is not loaded as names for the same reason.
+
 ## Not in this database
 
 The 2026 national portal. CollegeFootballDigest's portal page for 2026, which cites CollegeFootballData.com, said on its 16 November 2026 refresh that 4,483 players entered for the 2026 season, 3,504 had a new school on file, and 979 did not. https://collegefootballdigest.com/data/portal/2026. That player list is not loaded. CollegeFootballData.com's terms (Rad Sports Analytics LLC, effective 12 August 2026) allow display of reasonable portions and a private cache, and they prohibit publishing the API data as a standalone dataset, bulk download, or public database mirror. https://collegefootballdata.com/terms. CollegeFootballDigest's own source table marks a CSV of the CollegeFootballData.com feed as not allowed. https://collegefootballdigest.com/data/source-permissions. Copying that dump into this public repository would break those terms, so the 2026 board is only the four athletics pages above. Everyone in the 4,483 who is not named on those pages is missing.

@@ -48,8 +48,14 @@ function listPlayers(db, url) {
   const position = url.searchParams.get("position")?.trim() ?? "";
   const season = url.searchParams.get("season")?.trim() ?? "";
   const q = url.searchParams.get("q")?.trim() ?? "";
+  const commitment = url.searchParams.get("commitment")?.trim() ?? "";
   const where = [];
   const params = [];
+  if (commitment === "uncommitted") where.push("school_to IS NULL");
+  else if (commitment === "committed") where.push("school_to IS NOT NULL");
+  else if (commitment && commitment !== "all") {
+    return { status: 400, body: { error: "commitment must be uncommitted, committed, or all" } };
+  }
   if (position) {
     where.push("position_group = ?");
     params.push(position);
@@ -162,10 +168,14 @@ function meta(db) {
   const plottedCount = db
     .prepare("SELECT COUNT(*) AS n FROM players WHERE height_inches IS NOT NULL AND weight_lbs IS NOT NULL")
     .get().n;
+  const knownUncommitted = db.prepare("SELECT COUNT(*) AS n FROM players WHERE school_to IS NULL").get().n;
+  const knownCommitted = db.prepare("SELECT COUNT(*) AS n FROM players WHERE school_to IS NOT NULL").get().n;
   return {
     seedVersion: SEED_VERSION,
     playerCount,
     plottedCount,
+    knownUncommitted,
+    knownCommitted,
     seasons,
     groups,
     schoolsTo,

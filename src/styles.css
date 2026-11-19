@@ -72,6 +72,26 @@ h3 { margin: 18px 0 8px; font-size: 1rem; letter-spacing: 0.04em; text-transform
   margin-top: 16px;
 }
 
+.views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.views button {
+  min-height: 42px;
+  border: 1px solid #c9c0b0;
+  border-radius: 2px;
+  background: #fffdf8;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.views button[aria-pressed="true"] {
+  border-color: var(--turf);
+  background: #e7f0ea;
+  font-weight: 700;
+}
+
 .filters label { display: grid; gap: 4px; }
 .filters label span, .nearby p {
   font-size: 0.72rem;

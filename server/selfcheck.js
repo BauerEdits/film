@@ -52,6 +52,8 @@ function checkDatabase(db) {
   assert(db.prepare("SELECT COUNT(*) AS n FROM players").get().n === players.length, "total players");
   assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE portal_year = 2026").get().n === 112, "2026 class size");
   assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE portal_year = 2025").get().n === rosterMeta.players, "2025 class size");
+  assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE school_to IS NULL").get().n === 0, "no known-uncommitted rows");
+  assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE school_to IS NOT NULL").get().n === players.length, "every loaded player has a destination");
   assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE portal_entry_date IS NOT NULL").get().n === 0, "portal entry dates must stay null");
   assert(db.prepare("SELECT COUNT(*) AS n FROM nil_reports").get().n === 0, "nil empty");
   assert(db.prepare("SELECT COUNT(*) AS n FROM campus_visits").get().n === 0, "visits empty");
@@ -135,6 +137,7 @@ async function checkApi(base) {
   assert(meta.playerCount === players.length && meta.plottedCount === plotted, "meta counts");
   assert(meta.seasons.join() === "2025,2026", "season");
   assert(meta.coverage.includes("not a complete national portal"), "coverage stays partial");
+  assert(meta.knownUncommitted === 0 && meta.knownCommitted === players.length, "commitment counts");
   const qbCount = players.filter((player) => player.group === "QB").length;
   const list = await fetch(`${base}/api/players?position=QB`).then((res) => res.json());
   assert(list.players.length === qbCount, `QB count ${list.players.length}`);
@@ -149,6 +152,12 @@ async function checkApi(base) {
   assert(missing.players.length === 0, "empty search");
   const bad = await fetch(`${base}/api/players?season=nope`);
   assert(bad.status === 400, "bad season");
+  const uncommitted = await fetch(`${base}/api/players?commitment=uncommitted`).then((res) => res.json());
+  assert(uncommitted.players.length === 0, "uncommitted list stays empty");
+  const committed = await fetch(`${base}/api/players?commitment=committed`).then((res) => res.json());
+  assert(committed.players.length === players.length, "committed list is the full board");
+  const badCommitment = await fetch(`${base}/api/players?commitment=maybe`);
+  assert(badCommitment.status === 400, "bad commitment");
   const sample = players.find(
     (player) => player.source === "ncaa-rosters-2025" && player.stats.some((stat) => stat.key === "rush_yds" && stat.value > 0),
   );

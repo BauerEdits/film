@@ -14,6 +14,7 @@ export function App() {
   const [position, setPosition] = useState("");
   const [season, setSeason] = useState("");
   const [query, setQuery] = useState("");
+  const [commitment, setCommitment] = useState("uncommitted");
   const [selectedId, setSelectedId] = useState(readHash);
   const [neighborIds, setNeighborIds] = useState([]);
   const [detail, setDetail] = useState(null);
@@ -56,6 +57,7 @@ export function App() {
   useEffect(() => {
     const ctrl = new AbortController();
     const params = new URLSearchParams();
+    params.set("commitment", commitment);
     if (position) params.set("position", position);
     if (season) params.set("season", season);
     if (query.trim()) params.set("q", query.trim());
@@ -77,7 +79,7 @@ export function App() {
         setLoading(false);
       });
     return () => ctrl.abort();
-  }, [position, season, query, loadKey]);
+  }, [position, season, query, commitment, loadKey]);
 
   useEffect(() => {
     if (!selectedId) {
@@ -156,11 +158,44 @@ export function App() {
         <p className="who">Renegade Raider</p>
         <h1>Transfer Portal</h1>
         <p className="lede">
-          Height against weight for college football players whose cited roster names a previous college, plus the
-          2026 classes published by Auburn, Illinois, Kennesaw State, and Wisconsin. This is not every portal
-          entrant. Blank fields were not in the cited source.
+          Recruiting board. Each card shows the name, position, height, weight, previous school, eligibility, and
+          the counting stats the cited page printed. The board opens on players a source says entered the portal
+          with no new school. Committed players stay on the board. Switch to them, or to everyone.
         </p>
       </header>
+
+      <div className="views" role="group" aria-label="Who is on the board">
+        <button
+          type="button"
+          id="view-uncommitted"
+          aria-pressed={commitment === "uncommitted"}
+          onClick={() => setCommitment("uncommitted")}
+        >
+          Uncommitted
+        </button>
+        <button
+          type="button"
+          id="view-everyone"
+          aria-pressed={commitment === "all"}
+          onClick={() => setCommitment("all")}
+        >
+          Everyone
+        </button>
+        <button
+          type="button"
+          id="view-committed"
+          aria-pressed={commitment === "committed"}
+          onClick={() => setCommitment("committed")}
+        >
+          Committed
+        </button>
+      </div>
+      <p className="group-note" id="commitment-note">
+        Known-uncommitted: a cited source says the player entered the portal and names no new school. That is{" "}
+        {meta?.knownUncommitted ?? "…"} loaded {meta?.knownUncommitted === 1 ? "row" : "rows"}. Known-committed: the
+        cited page names a destination school. That is {meta?.knownCommitted ?? "…"} loaded rows, still on this
+        board. Anyone who entered the portal and is not on a cited page is missing, not marked available.
+      </p>
 
       <form className="filters" onSubmit={(event) => event.preventDefault()}>
         <label>
@@ -220,9 +255,12 @@ export function App() {
             <p className="count">
               {loading && !players.length
                 ? "Loading the roster…"
-                : filtered
-                  ? `${players.length} of ${meta?.playerCount ?? "…"} players`
-                  : `${players.length} players`}
+                : commitment === "uncommitted"
+                  ? `${players.length} known-uncommitted`
+                  : commitment === "committed"
+                    ? `${players.length} committed`
+                    : `${players.length} players`}
+              {filtered && commitment === "all" ? ` of ${meta?.playerCount ?? "…"}` : ""}
               {unplotted > 0 ? ` · ${unplotted} not plotted because size is unpublished` : ""}
             </p>
           </div>
@@ -231,9 +269,11 @@ export function App() {
             selectedId={selectedId}
             onSelect={selectFromChart}
             emptyLabel={
-              players.length === 0
-                ? "No players match these filters."
-                : "No players with a published height and weight match these filters."
+              players.length === 0 && commitment === "uncommitted"
+                ? "No known-uncommitted players are loaded. Committed players are still on the board. Use Everyone or Committed."
+                : players.length === 0
+                  ? "No players match these filters."
+                  : "No players with a published height and weight match these filters."
             }
           />
           <div className="legend">
@@ -264,17 +304,22 @@ export function App() {
         />
 
         <section className="roster card">
-          <h2 className="roster-title">Roster</h2>
+          <h2 className="roster-title">Recruiting list</h2>
+          <p className="group-note">Name, position, height, weight, previous school, and eligibility. Open a player for stats.</p>
           {players.length === 0 && !loading ? (
-            <p className="empty">No players match these filters.</p>
+            <p className="empty">
+              {commitment === "uncommitted"
+                ? "No known-uncommitted players are loaded. Choose Committed or Everyone to see players whose cited page names a destination."
+                : "No players match these filters."}
+            </p>
           ) : (
             <ul>
               {players.slice(0, 200).map((player) => {
                 const height =
                   player.heightInches == null
-                    ? "Height not published"
+                    ? "not published"
                     : `${Math.floor(player.heightInches / 12)}'${player.heightInches % 12}"`;
-                const weight = player.weightLbs == null ? "Weight not published" : `${player.weightLbs} lb`;
+                const weight = player.weightLbs == null ? "not published" : `${player.weightLbs} lb`;
                 return (
                   <li key={player.id}>
                     <button
@@ -286,10 +331,14 @@ export function App() {
                     >
                       <span className="row-name">{player.fullName}</span>
                       <span className="row-meta">
-                        {player.positionRaw ?? "Position not published"} · {height} · {weight}
+                        Position {player.positionRaw ?? "not published"} · Height {height} · Weight {weight}
                       </span>
                       <span className="row-schools">
-                        {player.schoolFrom ?? "School from not published"} → {player.schoolTo ?? "School to not published"}
+                        Previous school {player.schoolFrom ?? "not published"} · Eligibility{" "}
+                        {player.eligibilityRaw ?? "not published"}
+                      </span>
+                      <span className="row-schools">
+                        Destination {player.schoolTo ?? "not published"}
                       </span>
                     </button>
                   </li>
