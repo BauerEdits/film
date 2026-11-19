@@ -88,6 +88,7 @@ try {
 
   await page.$eval(`[data-player-id="${byrum.id}"]`, (el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
   await page.waitForFunction(() => document.querySelector("#player-detail h2")?.textContent === "Byrum Brown");
+  await page.waitForSelector('[data-field="grade-overall"]');
   const entered = await page.$eval('[data-field="portal-entry"]', (el) => el.textContent.trim());
   const signed = await page.$eval('[data-field="signed"]', (el) => el.textContent.trim());
   const from = await page.$eval('[data-field="school-from"]', (el) => el.textContent.trim());
@@ -96,6 +97,14 @@ try {
   if (signed !== "Jan 6, 2026") throw new Error(`signed was "${signed}"`);
   if (from !== "USF") throw new Error(`school from was "${from}"`);
   if (!yards.includes("3,158") || !yards.includes("Passing yards")) throw new Error("Byrum stat line missing");
+  const overall = await page.$eval('[data-field="grade-overall"]', (el) => el.textContent.trim());
+  const status = await page.$eval('[data-field="grade-status"]', (el) => el.textContent.trim());
+  const impact = await page.$eval('[data-field="grade-impact"]', (el) => el.textContent.trim());
+  const ypa = await page.$eval('[data-grade-input="ypa"]', (el) => el.textContent.trim());
+  if (overall !== "83.1") throw new Error(`overall was "${overall}"`);
+  if (status !== "Incomplete") throw new Error(`status was "${status}"`);
+  if (impact !== "High") throw new Error(`impact was "${impact}"`);
+  if (!ypa.includes("Not published")) throw new Error(`yards per attempt was "${ypa}"`);
   await page.screenshot({ path: "/tmp/portal-desktop.png", fullPage: true });
   await page.screenshot({ path: "/tmp/portal-detail.png" });
 

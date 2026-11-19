@@ -26,6 +26,16 @@ function groupStats(stats) {
   return groups;
 }
 
+function formatGrade(value) {
+  return value == null ? null : value.toFixed(1);
+}
+
+function gradeStatus(status) {
+  if (status === "complete") return "Complete";
+  if (status === "incomplete") return "Incomplete";
+  return null;
+}
+
 function emptyStats(source) {
   if (source?.statsScope === "table") {
     return "The cited roster table does not publish counting stats.";
@@ -108,6 +118,35 @@ export function Detail({
           ))}
           {detail?.dataNote && <p className="note">{detail.dataNote}</p>}
           {detail?.contextNote && <p className="note">{detail.contextNote}</p>}
+          <h3>Evaluation</h3>
+          {loading && !detail && <p className="empty">Loading evaluation…</p>}
+          {detail?.grade && (
+            <>
+              <dl className="facts">
+                <Field label="Overall" value={formatGrade(detail.grade.overall)} field="grade-overall" />
+                <Field label="Grade status" value={gradeStatus(detail.grade.status)} field="grade-status" />
+                <Field label="Projected impact" value={detail.grade.impact} field="grade-impact" />
+                <Field label="Production" value={formatGrade(detail.grade.production)} field="grade-production" />
+                <Field label="Athletic profile" value={formatGrade(detail.grade.athletic)} field="grade-athletic" />
+                <Field label="Experience" value={formatGrade(detail.grade.experience)} field="grade-experience" />
+                <Field label="Competition level" value={formatGrade(detail.grade.competition)} field="grade-competition" />
+              </dl>
+              <ul className="grade-inputs">
+                {detail.grade.inputs.map((input) => (
+                  <li key={input.id} data-grade-input={input.id}>
+                    {input.label}: {input.score == null ? "Not published" : input.score.toFixed(1)}
+                  </li>
+                ))}
+              </ul>
+              <p className="group-note">
+                Each number is a percentile against other loaded players at this position who have that input.
+                Overall weights the published pieces: production 45, athletic profile 25, experience 15, competition
+                15. Projected impact is High at 67 or above, Medium from 34 through 66.9, and Low below 34. Yards per
+                route, pressures, and return yards are not stored, so those inputs stay blank. Offensive-line position
+                is the printed position and is not scored.
+              </p>
+            </>
+          )}
           <h3>Stats</h3>
           {loading && !detail && <p className="empty">Loading stats…</p>}
           {detail && detail.stats.length === 0 && <p className="empty">{emptyStats(detail.source)}</p>}

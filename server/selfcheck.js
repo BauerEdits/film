@@ -6,6 +6,7 @@ import { neighborsWithin } from "../shared/hit.js";
 import rosterMeta from "./data/roster2025.meta.json" with { type: "json" };
 import { players } from "./data/index.js";
 import { openDatabase } from "./db.js";
+import { gradeFor, gradeSummary, previousDivision } from "./grades.js";
 import { startServer } from "./index.js";
 
 function assert(condition, message) {
@@ -127,6 +128,17 @@ function checkDatabase(db) {
     ).get().n === 0,
     "players without a stored line stay empty",
   );
+  assert(previousDivision("USF") === "D1", "USF is D1");
+  assert(previousDivision("Not A School") === null, "unknown previous school stays blank");
+  const grades = gradeSummary(db);
+  assert(
+    grades.complete === 4 && grades.incomplete === 10317 && grades.none === 10,
+    `grade counts ${grades.complete}/${grades.incomplete}/${grades.none}`,
+  );
+  const skinnerId = db.prepare("SELECT id FROM players WHERE full_name = 'Cole Skinner' AND portal_year = 2026").get().id;
+  const skinner = gradeFor(db, skinnerId);
+  assert(skinner.status === "complete" && skinner.overall != null, "Cole Skinner is complete");
+  assert(skinner.inputs.every((input) => input.score != null), "complete grade has every input");
 }
 
 async function checkApi(base) {
@@ -148,6 +160,11 @@ async function checkApi(base) {
   assert(detail.player.signedOn === "2026-01-06", "API signed date");
   assert(detail.player.schoolFrom === "USF" && detail.player.schoolTo === "Auburn", "API schools");
   assert(detail.player.stats.some((stat) => stat.key === "pass_yds" && stat.valueNum === 3158), "API stat");
+  const grade = detail.player.grade;
+  assert(grade.overall === 83.1 && grade.status === "incomplete" && grade.impact === "High", "Byrum grade");
+  assert(grade.inputs.find((input) => input.id === "ypa").score == null, "Byrum yards per attempt stay blank");
+  assert(grade.inputs.find((input) => input.id === "cmp_pct").score != null, "Byrum completion percentage is scored");
+  assert(grade.inputs.every((input) => input.published || input.score == null), "missing inputs are not filled");
   const missing = await fetch(`${base}/api/players?q=zzzz-no-player`).then((res) => res.json());
   assert(missing.players.length === 0, "empty search");
   const bad = await fetch(`${base}/api/players?season=nope`);

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { pathToFileURL } from "node:url";
 import { openDatabase, SEED_VERSION } from "./db.js";
 import { COVERAGE_SUMMARY } from "./data/sources.js";
+import { gradeFor, gradeSummary } from "./grades.js";
 
 const root = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const distRoot = resolve(root, "dist");
@@ -128,6 +129,7 @@ function getPlayer(db, id) {
       valueText: stat.value_text,
       unit: stat.unit,
     })),
+    grade: gradeFor(db, row.id),
     source: {
       slug: row.source_slug,
       publisher: row.publisher,
@@ -272,6 +274,7 @@ export function startServer({ port = 0, host = "127.0.0.1", dbPath, log = false 
   return new Promise((resolve, reject) => {
     server.once("error", reject);
     server.listen(port, host, () => {
+      gradeSummary(db);
       const address = server.address();
       const actual = typeof address === "object" && address ? address.port : port;
       if (log) console.log(`Transfer Portal API listening on http://${host}:${actual}`);

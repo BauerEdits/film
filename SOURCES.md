@@ -77,6 +77,33 @@ A loaded player would be known-uncommitted only when a cited source says he ente
 
 People who entered the portal and are not named on a cited page are missing from the database. They are not stored as available. On 19 November 2026, TransferPortl's public portal page said 6 of 4,789 tracked 2026 players were still available and 4,773 had committed (https://transferportl.com/portal?status=available). That named list is not loaded. TransferPortl's terms say not to copy the site's data into a competing product, and the same terms say its destinations are model estimates, not facts (https://transferportl.com/terms, updated 6 October 2026). The Digest count of 979 players without a new school, cited above, is a CollegeFootballData.com compilation and is not loaded as names for the same reason.
 
+## Evaluation grades
+
+Grades are computed when a player card is opened. They are not stored, and a missing number is not filled in.
+
+Each input is a 0–100 percentile against other loaded players in the same position group who have that input. The percentile is `100 * (players below + half the players tied) / players with the input`, rounded to one decimal. A player is not scored on an input when he does not have it, or when fewer than two players at his position have it.
+
+Production uses only stats already in `player_stats`, from the latest season that contains the pieces of that input. A ratio uses one season. Completions and attempts in that season make completion percentage; a published completion percentage is used only when attempts are not stored. Yards per carry is rushing yards divided by attempts in one season, or a published yards-per-carry figure when attempts are not stored. Games played prefers `gp`, then `games`. Tackles prefer `tackles_tot`, then `tackles`. Interceptions prefer `def_int`, then `int`.
+
+| Position | Production inputs that exist in the database | Inputs named by the request that are not stored |
+| --- | --- | --- |
+| QB | Completion percentage, yards per attempt, TD/INT ratio, rushing yards | — |
+| RB | Yards per carry, rushing yards, receiving yards | — |
+| WR | Receptions, yards per reception, receiving touchdowns | Yards per route |
+| TE | Same receiving inputs as WR | Yards per route |
+| OL | Starts, games played. The printed position is shown on the card and is not scored. | No other evaluation metric is invented |
+| DL and LB | Tackles, tackles for loss, sacks | Pressures |
+| DB | Interceptions, passes defended, tackles | — |
+| K, P, and LS | Punting average, only when that player has it | Field goals made and attempted, so field-goal percentage stays blank. Return yards, so return production stays blank. |
+
+ATH and players with no position group have no production template. Their production stays blank.
+
+Athletic profile is the average of the height percentile and the weight percentile at that position. Experience is the average of games played and starts. Competition level is the percentile of the previous school's division: D3 = 1, D2 = 2, D1 = 3. That division comes from the same CC0 football roster file, through `scripts/build_school_divisions.py`, which writes `server/data/school-divisions.json`. The destination school's division in the context note is not used. A previous school that does not match one division stays blank. Two schools in one cell are used only when both match the same division.
+
+Overall is the weighted average of the component scores that exist: production 0.45, athletic profile 0.25, experience 0.15, competition 0.15. The weights are scaled to the components that have a score. If every component is blank, overall is blank and there is no projected-impact label. Projected impact uses only the overall grade: High at 67 or above, Medium from 34 through 66.9, Low below 34.
+
+A grade is complete only when overall exists and every expected input for that position is published: the production inputs in the table, height, weight, games, starts, and previous-school division. Otherwise a grade that has any score is incomplete. On this seed, 4 players have a complete grade, 10,317 have an incomplete grade, and 10 have no grade because none of those inputs were published.
+
 ## Not in this database
 
 The 2026 national portal. CollegeFootballDigest's portal page for 2026, which cites CollegeFootballData.com, said on its 16 November 2026 refresh that 4,483 players entered for the 2026 season, 3,504 had a new school on file, and 979 did not. https://collegefootballdigest.com/data/portal/2026. That player list is not loaded. CollegeFootballData.com's terms (Rad Sports Analytics LLC, effective 12 August 2026) allow display of reasonable portions and a private cache, and they prohibit publishing the API data as a standalone dataset, bulk download, or public database mirror. https://collegefootballdata.com/terms. CollegeFootballDigest's own source table marks a CSV of the CollegeFootballData.com feed as not allowed. https://collegefootballdigest.com/data/source-permissions. Copying that dump into this public repository would break those terms, so the 2026 board is only the four athletics pages above. Everyone in the 4,483 who is not named on those pages is missing.
