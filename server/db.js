@@ -11,7 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const migrationPath = join(root, "db", "migrations", "001_init.sql");
 const defaultPath = join(root, "data", "portal.sqlite");
 
-export const SEED_VERSION = "2026.11.19.2";
+export const SEED_VERSION = "2026.11.19.3";
 
 const SEASON_SORT = {
   2025: 20250,

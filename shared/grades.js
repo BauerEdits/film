@@ -124,17 +124,14 @@ export function scoreAll(players) {
     const parts = { production, athletic, experience, competition };
     let weighted = 0;
     let weight = 0;
-    let incomplete = false;
     for (const [name, part] of Object.entries(parts)) {
-      if (part.incomplete || part.score == null) incomplete = true;
       if (part.score != null) {
         weighted += part.score * WEIGHTS[name];
         weight += WEIGHTS[name];
       }
     }
     const overall = weight ? round1(weighted / weight) : null;
-    let status = "none";
-    if (overall != null) status = incomplete ? "incomplete" : "complete";
+    const status = overall == null ? "none" : "complete";
     const inputs = [];
     const seen = new Set();
     for (const input of [

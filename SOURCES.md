@@ -71,7 +71,7 @@ Position groups on the chart are a display grouping. Cornerbacks and safeties ar
 
 ## Committed and uncommitted
 
-A loaded player is known-committed when `school_to` is the school named by the cited page. For the 2025 roster rows, that is the school whose roster lists him. For the 2026 rows, that is Auburn, Illinois, Kennesaw State, or Wisconsin, the school that announced him as an incoming transfer. All 10,331 loaded players are known-committed. None of those destination schools were cleared.
+A loaded player is known-committed when `school_to` is the school named by the cited page. For the 2025 roster rows, that is the school whose roster lists him. For the 2026 rows, that is Auburn, Illinois, Kennesaw State, or Wisconsin, the school that announced him as an incoming transfer. All 1,753 players who remain after the FBS filter are known-committed. None of those destination schools were cleared.
 
 A loaded player would be known-uncommitted only when a cited source says he entered the portal and names no new school. There are 0 such rows. No loaded row has an unknown commitment: every loaded row has a destination on the cited page.
 
@@ -100,9 +100,13 @@ ATH and players with no position group have no production template. Their produc
 
 Athletic profile is the average of the height percentile and the weight percentile at that position. Experience is the average of games played and starts. Competition level is the percentile of the previous school's division: D3 = 1, D2 = 2, D1 = 3. That division comes from the same CC0 football roster file, through `scripts/build_school_divisions.py`, which writes `server/data/school-divisions.json`. The destination school's division in the context note is not used. A previous school that does not match one division stays blank. Two schools in one cell are used only when both match the same division.
 
-Overall is the weighted average of the component scores that exist: production 0.45, athletic profile 0.25, experience 0.15, competition 0.15. The weights are scaled to the components that have a score. If every component is blank, overall is blank and there is no projected-impact label. Projected impact uses only the overall grade: High at 67 or above, Medium from 34 through 66.9, Low below 34.
+Overall is the weighted average of the component scores that exist: production 0.45, athletic profile 0.25, experience 0.15, competition 0.15. The weights are scaled to the components that have a score. Starts are not required. A production input that was never published stays blank and is left out of the average. Experience and competition stay on the card when they were published and stay blank when they were not. If every component is blank, overall is blank and there is no projected-impact label. When an overall number exists, that number is the grade. It is not marked incomplete. Projected impact uses only the overall grade: High at 67 or above, Medium from 34 through 66.9, Low below 34.
 
-A grade is complete only when overall exists and every expected input for that position is published: the production inputs in the table, height, weight, games, starts, and previous-school division. Otherwise a grade that has any score is incomplete. On this seed, 4 players have a complete grade, 10,317 have an incomplete grade, and 10 have no grade because none of those inputs were published.
+On the FBS board, all 1,753 loaded players have an overall grade. None are blank, because each remaining player has at least one published input that can be scored.
+
+## FBS filter
+
+The board keeps a player only when both `school_from` and `school_to` match one of the 136 Football Bowl Subdivision programs in the 2025 conference lineups published by FBSchedules on 1 July 2025 (Kevin Kelley). https://fbschedules.com/college-football-realignment-conference-changes-for-2025-take-effect-today/ That list is the ACC, American, Big 12, Big Ten, Conference USA, MAC, Mountain West, Pac-12, SEC, and Sun Belt lineups printed there, plus Notre Dame and UConn as the FBS independents. Delaware, Missouri State, and UMass are on the 2025 list. `scripts/build_fbs_schools.py` writes `server/data/school-fbs.json` by matching those names to the CC0 football roster. A roster school that is not one of the 136 is stored as not FBS. A previous-school string that matches neither an FBS name nor a roster school is unknown. Unknown is left out. It is not treated as FBS. Of the 10,331 players assembled from the roster release and the four 2026 announcements, 1,753 remain and 8,578 are removed.
 
 ## Not in this database
 

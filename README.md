@@ -23,7 +23,9 @@ The API is a small Node server using the built-in SQLite module. On startup it b
 
 The board opens on known-uncommitted players: a cited source says they entered the portal and names no new school. There are none in the seed. Every loaded player has a destination school on the cited page, so they are known-committed. The switch labeled Everyone or Committed shows them. No destination was erased to fill the uncommitted list.
 
-The player card grades production, athletic profile, experience, and competition level from numbers already stored. A missing stat stays blank and the grade is marked incomplete. The method is in [SOURCES.md](SOURCES.md).
+The board keeps a player only when both his previous school and his destination are FBS programs on the 2025 membership list. An unmatched school is left off. It is not guessed to be FBS.
+
+The player card shows an overall grade whenever the stored inputs can produce one. Production uses the stats that player actually has. Starts are not required. A missing stat stays blank. The method is in [SOURCES.md](SOURCES.md).
 
 Two seasons, and neither one is the full portal.
 

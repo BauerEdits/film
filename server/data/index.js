@@ -1,5 +1,6 @@
 import rosterPlayers from "./roster2025.json" with { type: "json" };
 import { auburnPlayers } from "./auburn.js";
+import { fbsBoard } from "./fbs.js";
 import { illinoisPlayers } from "./illinois.js";
 import { kennesawPlayers } from "./kennesaw.js";
 import { wisconsinPlayers } from "./wisconsin.js";
@@ -48,10 +49,14 @@ function fromRoster(list) {
   }));
 }
 
-export const players = [
+const loaded = [
   ...fromRoster(rosterPlayers),
   ...tag(auburnPlayers, "auburn", "Auburn"),
   ...tag(illinoisPlayers, "illinois", "Illinois"),
   ...tag(kennesawPlayers, "kennesaw", "Kennesaw State"),
   ...tag(wisconsinPlayers, "wisconsin", "Wisconsin"),
 ];
+
+const board = fbsBoard(loaded);
+export const players = board.players;
+export const fbsCounts = board.counts;

@@ -1,4 +1,3 @@
-import rosterMeta from "./data/roster2025.meta.json" with { type: "json" };
 import { parseHeight } from "../shared/format.js";
 import { players } from "./data/index.js";
 
@@ -6,11 +5,11 @@ const GROUPS = new Set(["QB", "RB", "WR", "TE", "OL", "DL", "LB", "DB", "K", "P"
 const ROSTER = "ncaa-rosters-2025";
 
 export const EXPECTED_COUNTS = {
-  auburn: 39,
-  illinois: 17,
-  kennesaw: 28,
-  wisconsin: 28,
-  [ROSTER]: rosterMeta.players,
+  auburn: 36,
+  illinois: 14,
+  kennesaw: 16,
+  wisconsin: 22,
+  [ROSTER]: 1665,
 };
 
 export function assertSeed(list = players) {

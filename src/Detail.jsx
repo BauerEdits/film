@@ -32,7 +32,6 @@ function formatGrade(value) {
 
 function gradeStatus(status) {
   if (status === "complete") return "Complete";
-  if (status === "incomplete") return "Incomplete";
   return null;
 }
 
@@ -140,10 +139,11 @@ export function Detail({
               </ul>
               <p className="group-note">
                 Each number is a percentile against other loaded players at this position who have that input.
-                Overall weights the published pieces: production 45, athletic profile 25, experience 15, competition
-                15. Projected impact is High at 67 or above, Medium from 34 through 66.9, and Low below 34. Yards per
-                route, pressures, and return yards are not stored, so those inputs stay blank. Offensive-line position
-                is the printed position and is not scored.
+                Overall is the weighted average of the pieces this player has: production 45, athletic profile 25,
+                experience 15, competition 15. A missing piece stays blank and is left out of the average. Starts are
+                not required. Projected impact is High at 67 or above, Medium from 34 through 66.9, and Low below 34.
+                Yards per route, pressures, and return yards are not stored. Offensive-line position is printed on the
+                card and is not scored.
               </p>
             </>
           )}

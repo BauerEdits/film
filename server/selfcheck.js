@@ -3,7 +3,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { formatHeight, parseHeight } from "../shared/format.js";
 import { neighborsWithin } from "../shared/hit.js";
-import rosterMeta from "./data/roster2025.meta.json" with { type: "json" };
 import { players } from "./data/index.js";
 import { openDatabase } from "./db.js";
 import { gradeFor, gradeSummary, previousDivision } from "./grades.js";
@@ -45,14 +44,14 @@ function checkDatabase(db) {
   assert(formatHeight(parseHeight("6-3")) === `6'3"`, "height format");
   const counts = db.prepare("SELECT src.slug, COUNT(p.id) AS n FROM sources src LEFT JOIN players p ON p.source_id = src.id GROUP BY src.id").all();
   const bySource = Object.fromEntries(counts.map((row) => [row.slug, row.n]));
-  assert(bySource.auburn === 39, "auburn count");
-  assert(bySource.illinois === 17, "illinois count");
-  assert(bySource.kennesaw === 28, "kennesaw count");
-  assert(bySource.wisconsin === 28, "wisconsin count");
-  assert(bySource["ncaa-rosters-2025"] === rosterMeta.players, "2025 roster count");
+  assert(bySource.auburn === 36, "auburn count");
+  assert(bySource.illinois === 14, "illinois count");
+  assert(bySource.kennesaw === 16, "kennesaw count");
+  assert(bySource.wisconsin === 22, "wisconsin count");
+  assert(bySource["ncaa-rosters-2025"] === 1665, "2025 roster count");
   assert(db.prepare("SELECT COUNT(*) AS n FROM players").get().n === players.length, "total players");
-  assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE portal_year = 2026").get().n === 112, "2026 class size");
-  assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE portal_year = 2025").get().n === rosterMeta.players, "2025 class size");
+  assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE portal_year = 2026").get().n === 88, "2026 class size");
+  assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE portal_year = 2025").get().n === 1665, "2025 class size");
   assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE school_to IS NULL").get().n === 0, "no known-uncommitted rows");
   assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE school_to IS NOT NULL").get().n === players.length, "every loaded player has a destination");
   assert(db.prepare("SELECT COUNT(*) AS n FROM players WHERE portal_entry_date IS NOT NULL").get().n === 0, "portal entry dates must stay null");
@@ -104,10 +103,10 @@ function checkDatabase(db) {
     assert(row && row.height_inches === height && row.weight_lbs === weight && row.school_from === from && row.eligibility_raw === eligibility, `literal mismatch for ${name}`);
   }
 
-  const jaiden = db.prepare("SELECT prep_listed FROM players WHERE full_name = 'Jaiden Crawford' AND school_to = 'Kennesaw State' AND portal_year = 2026").get();
   const cam = db.prepare("SELECT data_note FROM players WHERE full_name = 'Cam Miller' AND school_to = 'Kennesaw State' AND portal_year = 2026").get();
-  assert(jaiden.prep_listed == null, "Jaiden prep stays blank");
   assert(String(cam.data_note).includes("206"), "Cam Miller weight note");
+  const excluded = db.prepare("SELECT id FROM players WHERE full_name = 'Brayden Munroe' AND portal_year = 2026").get();
+  assert(!excluded, "Northern Colorado transfer stays off the FBS board");
   assert(statValue(db, "Byrum Brown", "2025", "pass_yds").value_num === 3158, "Byrum 2025 yards");
   assert(statValue(db, "Byrum Brown", "2025", "pass_td").value_num === 28, "Byrum 2025 pass td");
   assert(statValue(db, "Byrum Brown", "2025", "rush_yds").value_num === 1008, "Byrum 2025 rush");
@@ -116,9 +115,6 @@ function checkDatabase(db) {
   assert(statValue(db, "Bryson Washington", "Career", "rush_yds").value_num === 1861, "Bryson career");
   assert(statValue(db, "Rickie Collins", "2025", "pass_cmp_att").value_text === "97-of-181", "Rickie completions");
   assert(statValue(db, "Rickie Collins", "2025", "pass_yds").value_num === 1042, "Rickie yards");
-  assert(statValue(db, "Brayden Munroe", "2025", "rec").value_num === 46, "Munroe receptions");
-  assert(statValue(db, "Brayden Munroe", "2025", "rec_yds").value_num === 696, "Munroe yards");
-  assert(db.prepare("SELECT COUNT(*) AS n FROM player_stats s JOIN players p ON p.id = s.player_id WHERE p.full_name = 'Brayden Munroe' AND p.portal_year = 2026 AND season_label != '2025'").get().n === 0, "Munroe conflicting career totals omitted");
   assert(db.prepare("SELECT COUNT(*) AS n FROM player_stats s JOIN players p ON p.id = s.player_id WHERE p.full_name = 'Josh Anglin' AND p.portal_year = 2026 AND season_label = '2024'").get().n === 0, "Anglin 2024 conflict omitted");
   assert(
     db.prepare(
@@ -131,14 +127,11 @@ function checkDatabase(db) {
   assert(previousDivision("USF") === "D1", "USF is D1");
   assert(previousDivision("Not A School") === null, "unknown previous school stays blank");
   const grades = gradeSummary(db);
-  assert(
-    grades.complete === 4 && grades.incomplete === 10317 && grades.none === 10,
-    `grade counts ${grades.complete}/${grades.incomplete}/${grades.none}`,
-  );
+  assert(grades.complete === 1753 && grades.incomplete === 0 && grades.none === 0, "grade counts");
   const skinnerId = db.prepare("SELECT id FROM players WHERE full_name = 'Cole Skinner' AND portal_year = 2026").get().id;
   const skinner = gradeFor(db, skinnerId);
   assert(skinner.status === "complete" && skinner.overall != null, "Cole Skinner is complete");
-  assert(skinner.inputs.every((input) => input.score != null), "complete grade has every input");
+  assert(skinner.inputs.every((input) => input.published || input.score == null), "Skinner missing inputs stay blank");
 }
 
 async function checkApi(base) {
@@ -161,7 +154,8 @@ async function checkApi(base) {
   assert(detail.player.schoolFrom === "USF" && detail.player.schoolTo === "Auburn", "API schools");
   assert(detail.player.stats.some((stat) => stat.key === "pass_yds" && stat.valueNum === 3158), "API stat");
   const grade = detail.player.grade;
-  assert(grade.overall === 83.1 && grade.status === "incomplete" && grade.impact === "High", "Byrum grade");
+  assert(grade.overall === 76.5 && grade.status === "complete" && grade.impact === "High", "Byrum grade");
+  assert(grade.experience == null, "Byrum experience stays blank without starts or games");
   assert(grade.inputs.find((input) => input.id === "ypa").score == null, "Byrum yards per attempt stay blank");
   assert(grade.inputs.find((input) => input.id === "cmp_pct").score != null, "Byrum completion percentage is scored");
   assert(grade.inputs.every((input) => input.published || input.score == null), "missing inputs are not filled");

@@ -101,8 +101,8 @@ try {
   const status = await page.$eval('[data-field="grade-status"]', (el) => el.textContent.trim());
   const impact = await page.$eval('[data-field="grade-impact"]', (el) => el.textContent.trim());
   const ypa = await page.$eval('[data-grade-input="ypa"]', (el) => el.textContent.trim());
-  if (overall !== "83.1") throw new Error(`overall was "${overall}"`);
-  if (status !== "Incomplete") throw new Error(`status was "${status}"`);
+  if (overall !== "76.5") throw new Error(`overall was "${overall}"`);
+  if (status !== "Complete") throw new Error(`status was "${status}"`);
   if (impact !== "High") throw new Error(`impact was "${impact}"`);
   if (!ypa.includes("Not published")) throw new Error(`yards per attempt was "${ypa}"`);
   await page.screenshot({ path: "/tmp/portal-desktop.png", fullPage: true });
