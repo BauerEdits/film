@@ -1,0 +1,20 @@
+/** Illinois Athletics roster table, 2026 transfer class. No counting stats on that table. */
+export const illinoisPlayers = [
+  { name: "Robert Edmonson", pos: "LB", group: "LB", height: "6-2", weight: 225, from: "Colorado State", eligibility: "Jr.", hometown: "Houston, Texas" },
+  { name: "Deuce Fillmore", pos: "DB", group: "DB", height: "5-10", weight: 185, from: "Georgia State", eligibility: "Sr.", hometown: "Biloxi, Miss." },
+  { name: "Zach Haber", pos: "LS", group: "LS", height: "5-10", weight: 225, from: "Arkansas", eligibility: "Jr.", hometown: "Durango, Colo." },
+  { name: "Will Holmes", pos: "OLB", group: "LB", height: "6-4", weight: 245, from: "Utah State", eligibility: "Jr.", hometown: "Detroit, Mich." },
+  { name: "Katin Houser", pos: "QB", group: "QB", height: "6-3", weight: 225, from: "East Carolina", eligibility: "Sr.", hometown: "Anaheim, Calif." },
+  { name: "Carter Janki", pos: "DL", group: "DL", height: "6-5", weight: 290, from: "Penn", eligibility: "Sr.", hometown: "Redding, Conn." },
+  { name: "Christian Martin", pos: "OL", group: "OL", height: "6-6", weight: 300, from: "Colorado State", eligibility: "Jr.", hometown: "St. Rose, La." },
+  { name: "Ethan Moczulski", pos: "K", group: "K", height: "5-11", weight: 200, from: "Washington", eligibility: "Sr.", hometown: "Spokane, Wash." },
+  { name: "Alex Perry", pos: "WR", group: "WR", height: "6-5", weight: 210, from: "FIU", eligibility: "Sr.", hometown: "Port Charlotte, Fla." },
+  { name: "Jayshon Platt", pos: "WR", group: "WR", height: "6-1", weight: 195, from: "FAU", eligibility: "Sr.", hometown: "Sarasota, Fla." },
+  { name: "Darrell Prater", pos: "DL", group: "DL", height: "6-3", weight: 300, from: "Jacksonville State", eligibility: "Sr.", hometown: "Fort Payne, Ala." },
+  { name: "Jake Renfro", pos: "OL", group: "OL", height: "6-4", weight: 315, from: "Wisconsin", eligibility: "Sr.", hometown: "Mokena, Ill." },
+  { name: "Ty Robinson", pos: "WR", group: "WR", height: "6-4", weight: 200, from: "Ball State", eligibility: "Sr.", hometown: "Aurora, Colo." },
+  { name: "Maurice Smith Jr.", pos: "ATH", group: "ATH", height: "6-3", weight: 220, from: "Chowan", eligibility: "Sr.", hometown: "Fort Pierce, Fla." },
+  { name: "Connor Sullivan", pos: "DL", group: "DL", height: "6-4", weight: 270, from: "Washington State", eligibility: "R-Fr.", hometown: "Glenview, Ill." },
+  { name: "Isaiah Thomison", pos: "DL", group: "DL", height: "6-3", weight: 280, from: "Bowling Green", eligibility: "Jr.", hometown: "Fayetteville, Tenn." },
+  { name: "Lavon Williams", pos: "DB", group: "DB", height: "5-11", weight: 195, from: "East Texas A&M", eligibility: "Sr.", hometown: "San Antonio, Texas" },
+];
