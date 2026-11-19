@@ -1,3 +1,9 @@
+import rosterMeta from "./roster2025.meta.json" with { type: "json" };
+
+function comma(value) {
+  return value.toLocaleString("en-US");
+}
+
 export const sources = [
   {
     slug: "auburn",
@@ -43,7 +49,18 @@ export const sources = [
     coverageNote:
       "Incoming transfers whose Previous School cell names a college. Six rows are omitted because that cell names a high school: Jake Anderson (Durand), Marvin Burks Jr. (Cardinal Ritter), Malachai Coleman (Lincoln East), Bryan Jackson (McKinney), Nate Palmer (Decatur), and Hammond Russell IV (Dublin Coffman). The table has no counting stats.",
   },
+  {
+    slug: "ncaa-rosters-2025",
+    publisher: "NCAA All-Sports Rosters 2025-26 (Dharit Shah, CC0 1.0)",
+    title: "Football roster, bio, and 2025 stats sidecars, v2.1.1",
+    url: "https://huggingface.co/datasets/dharits3/ncaa-college-athlete-rosters-2025-26",
+    publishedOn: "2026-08-14",
+    accessedOn: "2026-11-19",
+    statsScope: "roster",
+    coverageNote:
+      `${comma(rosterMeta.players)} football players on 2025-26 NCAA rosters whose previous-school field names a college or junior college. Height, weight, class, and hometown are stored only when that roster published them. Counting stats are the 2025 season line from the same release, and only when the figure is not zero. This is the roster's previous-school field, not a portal-entry log.`,
+  },
 ];
 
 export const COVERAGE_SUMMARY =
-  "This board is a public subset of the 2026 college football transfer class, not a national portal dump. It holds incoming players named by Auburn (39), Illinois (17), Kennesaw State (28), and Wisconsin (28) on their official athletics sites. Six Wisconsin rows were left out because the previous-school cell names a high school. Heights, weights, schools, classes, and stats are copied from those pages. Anything a page does not state is left blank. NIL, official visits, recruiting rankings, and portal-entry dates are not in this database.";
+  `This board is not a complete national portal. The 2025 season has ${comma(rosterMeta.players)} players whose 2025-26 NCAA football roster lists a previous college or junior college, taken from the CC0 roster release (72,512 football rows). Of the ${comma(rosterMeta.previousSchoolRows)} rows with a previous-school value, ${comma(rosterMeta.excludedSameAsHighSchool)} match the high-school field, ${comma(rosterMeta.excludedHighSchoolWording)} read as a high school, ${comma(rosterMeta.excludedMajor)} are academic majors, and ${comma(rosterMeta.excludedUnclassified)} do not identify a college (examples: ${rosterMeta.unclassifiedExamples.slice(0, 8).join(", ")}). The other ${comma(rosterMeta.footballRosterRows - rosterMeta.previousSchoolRows)} football rows name no previous school and are not listed. The 2026 cycle on this board is only the 112 players named by Auburn, Illinois, Kennesaw State, and Wisconsin. CollegeFootballDigest, citing CollegeFootballData.com, reported 4,483 portal entries for 2026 (3,504 with a new school and 979 without) on its 16 November 2026 refresh. That player list is not loaded: CollegeFootballData.com's terms prohibit republishing the API data as a bulk dataset, and CollegeFootballDigest does not allow a CSV of that source. Portal cycles before 2025, entrants who never appear on a cited roster, portal-entry dates, NIL figures, and visits are not in this database.`;

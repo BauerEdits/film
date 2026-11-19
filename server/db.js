@@ -11,7 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const migrationPath = join(root, "db", "migrations", "001_init.sql");
 const defaultPath = join(root, "data", "portal.sqlite");
 
-export const SEED_VERSION = "2026.11.19.1";
+export const SEED_VERSION = "2026.11.19.2";
 
 const SEASON_SORT = {
   2025: 20250,
@@ -58,10 +58,10 @@ function seed(db) {
 
   const insertPlayer = db.prepare(`
     INSERT INTO players (
-      full_name, position_raw, position_group, height_inches, weight_lbs, portal_year,
+      person_key, full_name, position_raw, position_group, height_inches, weight_lbs, portal_year,
       portal_entry_date, signed_on, school_from, school_to, eligibility_raw, hometown,
-      prep_listed, data_note, context_note, source_id
-    ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      prep_listed, data_note, context_note, roster_url, source_id
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const insertStat = db.prepare(`
     INSERT INTO player_stats (
@@ -77,8 +77,9 @@ function seed(db) {
     for (const player of list) {
       const sourceId = sourceIds.get(player.source);
       if (!sourceId) throw new Error(`Unknown source ${player.source} for ${player.name}`);
-      const height = parseHeight(player.height);
+      const height = player.height ? parseHeight(player.height) : null;
       const inserted = insertPlayer.run(
+        player.personKey,
         player.name,
         player.pos,
         player.group,
@@ -93,6 +94,7 @@ function seed(db) {
         player.prep,
         player.dataNote,
         player.contextNote,
+        player.rosterUrl ?? null,
         sourceId,
       );
       const playerId = Number(inserted.lastInsertRowid);

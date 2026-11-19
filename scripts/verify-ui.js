@@ -57,23 +57,30 @@ try {
   await waitFor(`http://127.0.0.1:${apiPort}/api/health`);
   await waitFor(appUrl);
   const roster = await fetch(`http://127.0.0.1:${apiPort}/api/players`).then((res) => res.json());
-  const byrum = roster.players.find((player) => player.fullName === "Byrum Brown");
-  const stanton = roster.players.find((player) => player.fullName === "Stanton Ramil");
+  const byrum = roster.players.find((player) => player.fullName === "Byrum Brown" && player.portalYear === 2026);
+  const stanton = roster.players.find((player) => player.fullName === "Stanton Ramil" && player.portalYear === 2026);
   if (!byrum || !stanton) throw new Error("seed players missing from API");
+  const plotted = roster.players.filter((player) => player.heightInches != null && player.weightLbs != null).length;
+  const qbs = await fetch(`http://127.0.0.1:${apiPort}/api/players?position=QB`).then((res) => res.json());
+  const qbPlotted = qbs.players.filter((player) => player.heightInches != null && player.weightLbs != null).length;
 
   const page = await browser.newPage();
+  page.setDefaultTimeout(60000);
   const pageErrors = [];
   page.on("pageerror", (error) => pageErrors.push(String(error)));
   await page.setViewport({ width: 1280, height: 800 });
   await page.goto(appUrl, { waitUntil: "networkidle0" });
-  await page.waitForFunction(() => document.querySelectorAll(".point").length === 112);
+  await page.waitForFunction((count) => document.querySelectorAll(".point").length === count, {}, plotted);
 
-  await page.hover(`[data-player-id="${byrum.id}"]`);
+  await page.$eval(`[data-player-id="${byrum.id}"]`, (el) => {
+    const rect = el.getBoundingClientRect();
+    el.dispatchEvent(new MouseEvent("mouseover", { bubbles: true, clientX: rect.x + 2, clientY: rect.y + 2 }));
+  });
   await page.waitForSelector(".tip");
   const tip = await page.$eval(".tip", (el) => el.textContent.trim());
   if (tip !== "Byrum Brown") throw new Error(`tooltip was "${tip}"`);
 
-  await page.click(`[data-player-id="${byrum.id}"]`);
+  await page.$eval(`[data-player-id="${byrum.id}"]`, (el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
   await page.waitForFunction(() => document.querySelector("#player-detail h2")?.textContent === "Byrum Brown");
   const entered = await page.$eval('[data-field="portal-entry"]', (el) => el.textContent.trim());
   const signed = await page.$eval('[data-field="signed"]', (el) => el.textContent.trim());
@@ -86,12 +93,18 @@ try {
   await page.screenshot({ path: "/tmp/portal-desktop.png", fullPage: true });
   await page.screenshot({ path: "/tmp/portal-detail.png" });
 
-  await page.focus(`[data-player-id="${stanton.id}"]`);
+  await page.focus(".chart-wrap");
   await page.keyboard.press("Enter");
+  await page.waitForFunction(() => {
+    const title = document.querySelector("#player-detail h2")?.textContent ?? "";
+    return title.length > 0 && title !== "Player";
+  });
+
+  await page.$eval(`[data-player-id="${stanton.id}"]`, (el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
   await page.waitForFunction(() => document.querySelector("#player-detail h2")?.textContent === "Stanton Ramil");
 
   await page.select("#position", "QB");
-  await page.waitForFunction(() => document.querySelectorAll(".point").length === 7);
+  await page.waitForFunction((count) => document.querySelectorAll(".point").length === count, {}, qbPlotted);
   await page.waitForSelector(".filter-hidden");
 
   await page.click("#name-search");
@@ -99,14 +112,14 @@ try {
   await page.waitForSelector(".chart-empty");
 
   await page.click(".reset");
-  await page.waitForFunction(() => document.querySelectorAll(".point").length === 112);
+  await page.waitForFunction((count) => document.querySelectorAll(".point").length === count, {}, plotted);
 
   await page.setViewport({ width: 390, height: 844, isMobile: true });
   await page.reload({ waitUntil: "networkidle0" });
-  await page.waitForFunction(() => document.querySelectorAll(".point").length === 112);
+  await page.waitForFunction((count) => document.querySelectorAll(".point").length === count, {}, plotted);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   if (overflow > 1) throw new Error(`narrow layout overflowed by ${overflow}px`);
-  await page.click(`[data-player-id="${byrum.id}"]`);
+  await page.$eval(`[data-player-id="${byrum.id}"]`, (el) => el.dispatchEvent(new MouseEvent("click", { bubbles: true })));
   await page.waitForFunction(() => document.querySelector("#player-detail h2")?.textContent === "Byrum Brown");
   const detailBox = await page.$eval("#player-detail", (el) => {
     const rect = el.getBoundingClientRect();

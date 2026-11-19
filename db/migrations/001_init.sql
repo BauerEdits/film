@@ -21,19 +21,20 @@ CREATE TABLE sources (
   url TEXT NOT NULL,
   published_on TEXT,
   accessed_on TEXT NOT NULL,
-  stats_scope TEXT NOT NULL CHECK (stats_scope IN ('table', 'bios')),
+  stats_scope TEXT NOT NULL CHECK (stats_scope IN ('table', 'bios', 'roster')),
   coverage_note TEXT NOT NULL
 );
 
 CREATE TABLE players (
   id INTEGER PRIMARY KEY,
+  person_key TEXT NOT NULL UNIQUE,
   full_name TEXT NOT NULL,
-  position_raw TEXT NOT NULL,
-  position_group TEXT NOT NULL CHECK (
-    position_group IN ('QB', 'RB', 'WR', 'TE', 'OL', 'DL', 'LB', 'DB', 'K', 'P', 'LS', 'ATH')
+  position_raw TEXT,
+  position_group TEXT CHECK (
+    position_group IS NULL OR position_group IN ('QB', 'RB', 'WR', 'TE', 'OL', 'DL', 'LB', 'DB', 'K', 'P', 'LS', 'ATH')
   ),
-  height_inches INTEGER CHECK (height_inches IS NULL OR height_inches BETWEEN 60 AND 90),
-  weight_lbs INTEGER CHECK (weight_lbs IS NULL OR weight_lbs BETWEEN 140 AND 450),
+  height_inches INTEGER CHECK (height_inches IS NULL OR height_inches BETWEEN 58 AND 90),
+  weight_lbs INTEGER CHECK (weight_lbs IS NULL OR weight_lbs BETWEEN 85 AND 450),
   portal_year INTEGER NOT NULL,
   portal_entry_date TEXT,
   signed_on TEXT,
@@ -44,8 +45,8 @@ CREATE TABLE players (
   prep_listed TEXT,
   data_note TEXT,
   context_note TEXT,
-  source_id INTEGER NOT NULL REFERENCES sources(id),
-  UNIQUE (full_name, school_to, portal_year)
+  roster_url TEXT,
+  source_id INTEGER NOT NULL REFERENCES sources(id)
 );
 
 CREATE TABLE player_name_variants (

@@ -156,8 +156,9 @@ export function App() {
         <p className="who">Renegade Raider</p>
         <h1>Transfer Portal</h1>
         <p className="lede">
-          Height against weight for incoming transfers published by Auburn, Illinois, Kennesaw State, and Wisconsin
-          for the 2026 class. Blank fields were not on the source page.
+          Height against weight for college football players whose cited roster names a previous college, plus the
+          2026 classes published by Auburn, Illinois, Kennesaw State, and Wisconsin. This is not every portal
+          entrant. Blank fields were not in the cited source.
         </p>
       </header>
 
@@ -248,7 +249,7 @@ export function App() {
               </button>
             ))}
           </div>
-          <p className="hint">Hover a point for the name. Click it, or press Enter, to open the player.</p>
+          <p className="hint">Hover a point for the name. Click it, or focus the chart and press Enter, to open the player.</p>
         </section>
 
         <Detail
@@ -268,7 +269,7 @@ export function App() {
             <p className="empty">No players match these filters.</p>
           ) : (
             <ul>
-              {players.map((player) => {
+              {players.slice(0, 200).map((player) => {
                 const height =
                   player.heightInches == null
                     ? "Height not published"
@@ -285,7 +286,7 @@ export function App() {
                     >
                       <span className="row-name">{player.fullName}</span>
                       <span className="row-meta">
-                        {player.positionRaw} · {height} · {weight}
+                        {player.positionRaw ?? "Position not published"} · {height} · {weight}
                       </span>
                       <span className="row-schools">
                         {player.schoolFrom ?? "School from not published"} → {player.schoolTo ?? "School to not published"}
@@ -295,6 +296,9 @@ export function App() {
                 );
               })}
             </ul>
+          )}
+          {players.length > 200 && (
+            <p className="empty">Showing the first 200 of {players.length}. Search a name to narrow the list.</p>
           )}
         </section>
       </div>

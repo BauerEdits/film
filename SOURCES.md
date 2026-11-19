@@ -1,8 +1,28 @@
 # Sources
 
-Accessed 2026-11-19. School names, classes, heights, and weights are copied as each athletics site printed them. They are not normalized, converted, or filled in from a second site.
+Accessed 2026-11-19. Names, schools, classes, heights, weights, and stats are copied from the cited source. They are not guessed, averaged, or filled in from a second site. A blank field means the cited source did not publish it.
 
-`school_to` is the school that published the player as an incoming transfer. `school_from` is the previous-school column on that same page. `portal_year` is the 2026 class those pages describe. `portal_entry_date` is null for every row: none of these pages give the day a player entered the portal. Auburn's dates are the "Signed" column only.
+This is not a complete national portal. Two seasons are loaded, and both have gaps that are counted below.
+
+`portal_entry_date` is null for every row. None of the cited pages give the day a player entered the portal. Auburn's dates are the "Signed" column only.
+
+## 2025 season: NCAA roster previous schools
+
+Source: Dharit Shah, NCAA All-Sports Rosters 2025-26, v2.1.1, CC0 1.0. DOI 10.57967/hf/9512. Dataset card: https://huggingface.co/datasets/dharits3/ncaa-college-athlete-rosters-2025-26. The football slice is `by_sport/football/all.parquet`, joined to `data/ncaa_athlete_bio_2025-26.parquet` on `athlete_id`, with 2025 counting stats from `by_sport/football/stats.parquet`. The football codebook calls `previous_school` the JUCO and transfer pipeline and also says the field is heterogeneous. The build date on the datasheet is 14 August 2026. The files used here were downloaded 19 November 2026.
+
+`portal_year` for these rows is 2025, the season column on the roster file. `school_to` is the roster school. `school_from` is the previous-school cell after removing a leading "Previous School:" label, when that label was present. The rest of the cell is stored as printed, including a slash between two schools. `roster_url` is the `source_url` of that roster page.
+
+A row is kept only when that previous-school text identifies a college or junior college: it matches a football school name in the same release (after ordinary abbreviations such as State/St.), it contains a college word (college, university, junior, community, institute, C.C., J.C.), or it is one of the short college names listed in `scripts/build_roster_transfers.py`. High-school matches, prep and academy wording, and academic majors that landed in the column are dropped. Strings that still do not identify a college are dropped too.
+
+The exact kept and dropped counts are in `server/data/roster2025.meta.json` and in the coverage line the app serves. In short: 72,512 football roster rows; 17,152 have a previous-school value; the kept set is the college and junior-college subset; the rest of the football file has no previous school and is not on the board. Dropped examples that are still missing include Albany, Southern, Charleston, Lincoln, Smithville, South Oak Cliff, West Linn, and Pine Creek, where the text is a short name that could be a college or a high school and was not promoted.
+
+Height and weight are stored only when the bio sidecar has a whole-inch height from 58 to 90 and a weight from 85 to 450. Anything outside that, or missing, stays null. Position group uses the file's group when it is already QB, RB, WR, TE, OL, DL, LB, DB, or ATH. Special-teams rows are mapped from the printed position (kicker, punter, snapper). Other wording is mapped only when the printed words name one of those groups. Otherwise the group is null and the raw position is kept.
+
+Counting stats are the 2025 columns in the stats sidecar: games, passing, rushing, receiving, tackles, tackles for loss, sacks, interceptions, passes defended, field goals, punts, and punt average. A figure is stored only when it is present and not zero. A zero is omitted rather than shown as a season total. These are the destination roster's 2025 line, not a prior school's line.
+
+## 2026 season: four athletics announcements
+
+`school_to` is the school that published the player as an incoming transfer. `school_from` is the previous-school column on that same page. `portal_year` is the 2026 class those pages describe.
 
 ## Pages in the database
 
@@ -51,6 +71,13 @@ Position groups on the chart are a display grouping. Cornerbacks and safeties ar
 
 ## Not in this database
 
-Everyone outside these four announcements. Portal entry dates. NIL valuations. Official or unofficial visits. Snap grades. Depth-chart status after the announcement. Whether a player remained enrolled after the article ran.
+The 2026 national portal. CollegeFootballDigest's portal page for 2026, which cites CollegeFootballData.com, said on its 16 November 2026 refresh that 4,483 players entered for the 2026 season, 3,504 had a new school on file, and 979 did not. https://collegefootballdigest.com/data/portal/2026. That player list is not loaded. CollegeFootballData.com's terms (Rad Sports Analytics LLC, effective 12 August 2026) allow display of reasonable portions and a private cache, and they prohibit publishing the API data as a standalone dataset, bulk download, or public database mirror. https://collegefootballdata.com/terms. CollegeFootballDigest's own source table marks a CSV of the CollegeFootballData.com feed as not allowed. https://collegefootballdigest.com/data/source-permissions. Copying that dump into this public repository would break those terms, so the 2026 board is only the four athletics pages above. Everyone in the 4,483 who is not named on those pages is missing.
 
-`nil_reports` and `campus_visits` exist and are empty so those can be added later from a cited source without reshaping the player row.
+Also missing:
+
+- Portal cycles from 2021 through 2024. The roster release used here is the 2025-26 athletic year only.
+- 2025 roster rows with no previous school, and the previous-school rows classified as a high school, a major, or an unidentified string. The counts are in `server/data/roster2025.meta.json`.
+- Players who entered a portal and never appeared on a cited 2025 roster or 2026 announcement.
+- Portal-entry dates.
+- NIL valuations and official or unofficial visits. `nil_reports` and `campus_visits` exist and are empty so a later cited source can fill them without reshaping the player row.
+- Recruiting rankings, snap grades, and whether a player stayed enrolled after the page was published.

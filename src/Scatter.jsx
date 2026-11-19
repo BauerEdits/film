@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { neighborsWithin } from "../shared/hit.js";
 import { formatHeight } from "../shared/format.js";
 import { groupMeta } from "./positions.js";
 
@@ -94,24 +93,15 @@ export function Scatter({ players, selectedId, onSelect, emptyLabel }) {
   function choose(player, event) {
     event?.preventDefault();
     setFocusId(player.id);
-    const root = chartRef.current;
-    if (!root) {
-      onSelect(player.id, [player.id]);
-      return;
-    }
-    const spots = [...root.querySelectorAll(".point")].map((button) => {
-      const rect = button.getBoundingClientRect();
-      return {
-        id: Number(button.dataset.playerId),
-        x: rect.left + rect.width / 2,
-        y: rect.top + rect.height / 2,
-      };
+    const limit = 16 / safeScale;
+    const near = placed.filter((other) => {
+      const dx = other.cx - player.cx;
+      const dy = other.cy - player.cy;
+      return dx * dx + dy * dy <= limit * limit;
     });
-    const origin = spots.find((spot) => spot.id === player.id);
-    const near = origin ? neighborsWithin(spots, origin, 16) : [{ id: player.id }];
     onSelect(
       player.id,
-      near.map((spot) => spot.id),
+      (near.length ? near : [player]).map((spot) => spot.id),
     );
   }
 
@@ -119,9 +109,21 @@ export function Scatter({ players, selectedId, onSelect, emptyLabel }) {
     const index = placed.findIndex((player) => player.id === focusId);
     const next = placed[(index + delta + placed.length) % placed.length];
     setFocusId(next.id);
-    requestAnimationFrame(() => {
-      chartRef.current?.querySelector(`[data-player-id="${next.id}"]`)?.focus();
-    });
+  }
+
+  function onChartKey(event) {
+    if (event.key === "Enter" || event.key === " ") {
+      const player = placed.find((item) => item.id === focusId);
+      if (player) choose(player, event);
+    }
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+      event.preventDefault();
+      moveFocus(1);
+    }
+    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+      event.preventDefault();
+      moveFocus(-1);
+    }
   }
 
   const tipStyle = hover
@@ -129,9 +131,31 @@ export function Scatter({ players, selectedId, onSelect, emptyLabel }) {
     : null;
 
   return (
-    <div className="chart-wrap" ref={chartRef}>
+    <div
+      className="chart-wrap"
+      ref={chartRef}
+      tabIndex={0}
+      role="application"
+      aria-label="Height and weight chart. Arrow keys move the highlight. Enter opens that player."
+      onKeyDown={onChartKey}
+    >
       <p className="axis-note">Vertical axis is weight in pounds. Horizontal axis is height.</p>
-      <svg ref={svgRef} viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} aria-hidden="true">
+      <svg
+        ref={svgRef}
+        viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+        role="group"
+        aria-label="Players by height and weight"
+        onMouseOver={(event) => {
+          const id = Number(event.target?.dataset?.playerId);
+          if (!id) return;
+          setHover({ id, x: event.clientX, y: event.clientY });
+        }}
+        onMouseLeave={() => setHover(null)}
+        onClick={(event) => {
+          const player = placed.find((item) => item.id === Number(event.target?.dataset?.playerId));
+          if (player) choose(player, event);
+        }}
+      >
         {ticks(yMin, yMax, weightStep).map((tick) => (
           <g key={`y-${tick}`}>
             <line x1={pad.l} x2={VIEW_W - pad.r} y1={yOf(tick)} y2={yOf(tick)} className="grid" />
@@ -154,43 +178,24 @@ export function Scatter({ players, selectedId, onSelect, emptyLabel }) {
         <text x={4 / safeScale} y={16 / safeScale} className="axis-title" fontSize={font}>
           Weight (lb)
         </text>
-      </svg>
-      <div className="points" role="group" aria-label="Height and weight. Tab to a point and press Enter to open that player.">
         {placed.map((player) => {
           const color = groupMeta(player.positionGroup).color;
           const selected = player.id === selectedId;
+          const focused = player.id === focusId;
           return (
-            <button
+            <circle
               key={player.id}
-              type="button"
-              className={selected ? "point selected" : "point"}
+              className={selected ? "point selected" : focused ? "point focused" : "point"}
               data-player-id={player.id}
-              style={{ left: `${(player.cx / VIEW_W) * 100}%`, top: `${(player.cy / VIEW_H) * 100}%` }}
-              tabIndex={player.id === focusId ? 0 : -1}
-              aria-pressed={selected}
-              aria-label={`${player.fullName}, ${player.positionRaw}, ${formatHeight(player.heightInches)}, ${player.weightLbs} pounds`}
-              onMouseEnter={(event) => setHover({ id: player.id, x: event.clientX, y: event.clientY })}
-              onMouseMove={(event) => setHover({ id: player.id, x: event.clientX, y: event.clientY })}
-              onMouseLeave={() => setHover((current) => (current?.id === player.id ? null : current))}
-              onFocus={() => setFocusId(player.id)}
-              onClick={(event) => choose(player, event)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" || event.key === " ") choose(player, event);
-                if (event.key === "ArrowRight" || event.key === "ArrowDown") {
-                  event.preventDefault();
-                  moveFocus(1);
-                }
-                if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
-                  event.preventDefault();
-                  moveFocus(-1);
-                }
-              }}
-            >
-              <span className="core" style={{ background: color }} />
-            </button>
+              cx={player.cx}
+              cy={player.cy}
+              r={selected || focused ? 5.4 : 4.2}
+              fill={color}
+              aria-label={`${player.fullName}, ${player.positionRaw ?? "position not published"}, ${formatHeight(player.heightInches)}, ${player.weightLbs} pounds`}
+            />
           );
         })}
-      </div>
+      </svg>
       {hover && tipStyle && (
         <div className="tip" role="tooltip" style={tipStyle}>
           {placed.find((player) => player.id === hover.id)?.fullName}

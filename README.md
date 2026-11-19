@@ -21,7 +21,11 @@ The API is a small Node server using the built-in SQLite module. On startup it b
 
 ## What is loaded
 
-112 incoming transfers from the 2026 class, taken from four official athletics announcements:
+Two seasons, and neither one is the full portal.
+
+**2025.** Players on 2025-26 NCAA football rosters whose previous-school field names a college or junior college. The rows come from the CC0 roster release [NCAA All-Sports Rosters 2025-26](https://huggingface.co/datasets/dharits3/ncaa-college-athlete-rosters-2025-26) (Dharit Shah, v2.1.1). High-school previous schools, academic majors that leaked into that field, and strings that do not name a college are left out. The count and the exclusion totals are in [SOURCES.md](SOURCES.md). `scripts/build_roster_transfers.py` is the filter that produced `server/data/roster2025.json`.
+
+**2026.** 112 incoming transfers from four official athletics announcements:
 
 | School | Players | Page |
 | --- | ---: | --- |
@@ -30,7 +34,7 @@ The API is a small Node server using the built-in SQLite module. On startup it b
 | Kennesaw State | 28 | [28 transfers](https://ksuowls.com/news/2026/1/21/kennesaw-state-football-adds-28-transfers-to-roster.aspx) |
 | Wisconsin | 28 | [2026 transfer additions](https://uwbadgers.com/sports/2026/1/2/wisconsin-football-2026-transfer-additions) |
 
-This is not a national portal dump. Players who entered the portal and were not on these four lists are absent. Six Wisconsin rows are absent on purpose: the previous-school cell names a high school, and this board does not turn that into a college. Details, stat rules, and the omitted names are in [SOURCES.md](SOURCES.md).
+CollegeFootballDigest, citing CollegeFootballData.com, reported 4,483 portal entries for the 2026 season. That list is not in this repo. The API terms prohibit republishing the bulk file, and the digest does not allow a CSV of that source. Everyone in that count who is not on the four pages above is still missing. So are portal cycles before 2025, entrants who never show up on a cited roster, portal-entry dates, NIL figures, and visits.
 
 Unknown fields stay null. The card says "Not published". Portal entry dates, NIL figures, and campus visits are not in the seed. The last two already have empty tables so a later migration can fill them from a real source.
 

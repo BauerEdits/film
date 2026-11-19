@@ -111,6 +111,7 @@ function getPlayer(db, id) {
     prepListed: row.prep_listed,
     dataNote: row.data_note,
     contextNote: row.context_note,
+    rosterUrl: row.roster_url,
     variants: variants.map((variant) => ({ name: variant.variant, note: variant.note })),
     stats: stats.map((stat) => ({
       seasonLabel: stat.season_label,

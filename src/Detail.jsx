@@ -30,6 +30,9 @@ function emptyStats(source) {
   if (source?.statsScope === "table") {
     return "The cited roster table does not publish counting stats.";
   }
+  if (source?.statsScope === "roster") {
+    return "No non-zero counting stat from the 2025 roster line is stored for this player.";
+  }
   return "No counting stat from the cited bio is stored for this player.";
 }
 
@@ -130,6 +133,14 @@ export function Detail({
               Source:{" "}
               <a href={detail.source.url} rel="noreferrer">
                 {detail.source.publisher} — {detail.source.title}
+              </a>
+            </p>
+          )}
+          {detail?.rosterUrl && (
+            <p className="source-line">
+              School roster page:{" "}
+              <a href={detail.rosterUrl} rel="noreferrer">
+                Open the page this row was read from
               </a>
             </p>
           )}
